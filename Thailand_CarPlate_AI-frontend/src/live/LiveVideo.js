@@ -246,11 +246,11 @@ const rtspUrl = `http://localhost:8081/start`;
 
 /*測試用rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4*/
 // const rtspUrl1 = "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4";
-// const rtspUrl2 = "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4";
+
 
 /** 現場RTSP URi */  
-const rtspUrl1 = "rtsp://admin:123456@192.168.2.43:554/media/media.amp?streamprofile=Profile1&audio=0";
-// const rtspUrl2 = "rtsp://admin:123456@192.168.2.43:554/media/media.amp?streamprofile=Profile1&audio=0";
+const rtspUrl1 = "rtsp://admin:123456@192.168.2.36:554/media/media.amp?streamprofile=Profile1&audio=0";
+
 
 
 /**儲存轉換成react-Hls-player可以播放的檔案路徑 */
@@ -288,11 +288,11 @@ useEffect(() => {
 // var ws = React.useRef(new WebSocket('ws://localhost:8080/ws')).current;
 
   /**儲存新車牌號碼 , 更新於網頁 */
-  const [cam1plate, setCam1plate] = useState({});
+  const [cam1plate, setCam1plate] = useState('');
   /**儲存照片路徑 */
-  const [cam1image, setCam1image] = useState({});
+  const [cam1image, setCam1image] = useState('');
   /**儲存照片日期 */
-  const [cam1date, setCam1date] = useState({});
+  const [cam1date, setCam1date] = useState('');
 
   /**用來儲存wd連線 */
   // const [ws, setWs] = useState(null);
@@ -390,7 +390,8 @@ useEffect(()=>{
           <div>
             <img
               alt=""
-              src={"D:/workspace/ThaiLPR/jpg/"+{cam1date}+"/cam1"+{cam1image}}
+              src={cam1image}
+              // src="SLAM_DUNK_2022.jpg"
               width={"100%"}
             ></img>
           </div>

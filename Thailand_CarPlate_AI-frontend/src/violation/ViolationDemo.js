@@ -11,7 +11,7 @@ export default function ViolationDemo() {
 
   const serverUrl = useContext(urlContext);
 
-  const fetchurl = serverUrl + "getAllCars";
+  const fetchurl = serverUrl + "lpr/getAllCars";
   // const fetchurl = "http://192.168.195.213:8080/lpr/all";
 
   useEffect(() => {
@@ -76,6 +76,7 @@ const TableHeader = () => {
 };
 
 const tableBody = (value, index) => {
+
   return (
     <tr key={index}>
       <td>{value.plateNumber}</td>
@@ -83,7 +84,8 @@ const tableBody = (value, index) => {
       <td>{value.recognitionTimeStr}</td>
       <td>{value.cameraId}</td>
       <td>
-        <ImgButton imagePath={value.imagePath} />
+        <ImgButton imagePath= {value.imagePath} />
+        {/* <ImgButton imagePath= "SLAM_DUNK_2022.jpg" /> */}
       </td>
     </tr>
   );
