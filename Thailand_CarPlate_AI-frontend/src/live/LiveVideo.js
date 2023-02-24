@@ -220,7 +220,7 @@
 //   );
 
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState ,useRef} from "react";
 import ReactHlsPlayer from "react-hls-player";
 import MyModal from "./MyModal";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -234,6 +234,8 @@ export default function LiveVideo(){
 
   /*************************docker hls作法 START****************************** */
 
+const ip_win = window.location.host.split(":")[0];
+//console.log("ip_win="+ip_win);
 /**啟動docker hls的port位置8081  */
 const ip = "http://localhost:8081"
  //const ip = window.location.host.split(":")[0];  //localhost
@@ -242,20 +244,23 @@ const ip = "http://localhost:8081"
 /**docker啟動rtsp轉換的command */
 const rtspUrl = `http://localhost:8081/start`;
 
+/*測試用rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4*/
+// const rtspUrl1 = "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4";
+// const rtspUrl2 = "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4";
 
 /** 現場RTSP URi */  
 const rtspUrl1 = "rtsp://admin:123456@192.168.2.43:554/media/media.amp?streamprofile=Profile1&audio=0";
-const rtspUrl2 = "rtsp://admin:123456@192.168.2.43:554/media/media.amp?streamprofile=Profile1&audio=0";
+// const rtspUrl2 = "rtsp://admin:123456@192.168.2.43:554/media/media.amp?streamprofile=Profile1&audio=0";
 
 
 /**儲存轉換成react-Hls-player可以播放的檔案路徑 */
 const [hlsuri1, setHlsUri1] = useState([]);
-const [hlsuri2, setHlsUri2] = useState([]);
+//const [hlsuri2, setHlsUri2] = useState([]);
 
 
 /**把現場RTSP URi餵給要POST給docker 的rtsp資料 */
 const rtspData1 = {"uri": rtspUrl1,"alias": "camera1"};
-const rtspData2 = {"uri": rtspUrl2,"alias": "camera2"};
+//const rtspData2 = {"uri": rtspUrl2,"alias": "camera2"};
 /** */
 function postRtsp1() {
   fetch(rtspUrl, {
@@ -268,22 +273,11 @@ function postRtsp1() {
       setHlsUri1(ip+response.uri);
   });
 }
-function postRtsp2() {
-  fetch(rtspUrl, {
-    method: 'POST',
-    body: JSON.stringify(rtspData2)
-  })
-    .then(res => res.json())
-    .catch(error => console.error('Error:', error))
-    .then(response => {
-      setHlsUri2(ip+response.uri);
-  });
-}
+
 
 /**一開始就丟串流進入docker container */
 useEffect(() => {
   postRtsp1();
-  postRtsp2();
 },[]);
 
 /*************************docker hls作法 END ****************************** */
@@ -291,45 +285,57 @@ useEffect(() => {
 
 /*************************websocket作法 START ****************************** */
 
+// var ws = React.useRef(new WebSocket('ws://localhost:8080/ws')).current;
 
   /**儲存新車牌號碼 , 更新於網頁 */
-  const [cam1, setCam1] = useState({});
-  const [cam2, setCam2] = useState({});
+  const [cam1plate, setCam1plate] = useState({});
+  /**儲存照片路徑 */
+  const [cam1image, setCam1image] = useState({});
+  /**儲存照片日期 */
+  const [cam1date, setCam1date] = useState({});
+
+  /**用來儲存wd連線 */
+  // const [ws, setWs] = useState(null);
+  // const [message, setMessage] = useState('')
 
 
 /**當前端確實接收到websocket傳來的"update"後 , call此func抓新車牌 */
 async function catchPlateNumber(){
   /**連到server取得最新的所有資料 (或只要取車牌資料)  */
-  const res = await fetch("http://localhost:8080/cams/latest");
+  const res = await fetch("http://localhost:8080/lpr/cams/latest");
   const res_tmp = await res.json();
 
-  res_tmp.cam1.imagePath = res_tmp.cam1.imagePath.substring(1);
-  res_tmp.cam2.imagePath = res_tmp.cam2.imagePath.substring(1);
-  setCam1(res_tmp.cam1);
-  setCam2(res_tmp.cam2);
+  console.log(res_tmp.cam1);
+  const tmp_date = (res_tmp.cam1.recognitionTimeStr).substr(0,10);
+
+  setCam1date(tmp_date);
+  setCam1plate(res_tmp.cam1.plateNumber);
+  setCam1image(res_tmp.cam1.imagePath);
 }
 
-/**Websocket 進入點 */
-useEffect(() => {
-  
+
+/**websocket 進入點 */
+useEffect(()=>{
   catchPlateNumber();
-  const wsUrl = "ws://localhost:8080/ws";
+  const wsUrl = "ws://127.0.0.1:8080/ws";
   const ws = new WebSocket(wsUrl);
-
   ws.onopen = () => {
-    console.log(`connected to ${wsUrl}`);
+    //console.log(`connected to ${wsUrl}`);
   };
-
-  /**當ws接收到server傳來的MESSAGE , 且MESSAGE=update時 , call抓新車牌的func */
+  ws.onerror = (e) => {
+    console.log(e.message);
+  };
   ws.onmessage = (msg) => {
     const data = msg.data;
-    /**當lpr有丟新車號時 , 執行抓新車牌 */
+    console.log(data);
     if (data === "update") {
-      console.log(data);
       catchPlateNumber();
     }
   };
-}, []);
+},[])
+
+/**websocket 結束點 */
+
 
 
 /**當lpr有丟新車號時 , 執行抓新車牌 */
@@ -347,7 +353,7 @@ useEffect(() => {
     <FormattedMessage id="menu-live" />
     </div>
 
-    <div className="grid">
+     <div className="grid">
       <div className="grid-item item1">
         <div className="col">
           <ReactHlsPlayer
@@ -359,7 +365,7 @@ useEffect(() => {
           />
         </div>
       </div>
-      <div className="grid-item item2">
+      {/* <div className="grid-item item2">
         <div className="col">
           <ReactHlsPlayer
             src={hlsuri2}
@@ -369,30 +375,8 @@ useEffect(() => {
             height={"100%"}
           />
         </div>
-      </div>
-      {/* <div className="grid-item item4">
-        <div className="col">
-          <ReactHlsPlayer
-            src={hlsuri1}
-            autoPlay={true}
-            muted={true}
-            width={"100%"}
-            height={"100%"}
-          />
-        </div>
-      </div>
-      <div className="grid-item item4">
-        <div className="col">
-          <ReactHlsPlayer
-            src={hlsuri1}
-            autoPlay={true}
-            muted={true}
-            width={"100%"}
-            height={"100%"}
-          />
-        </div>
       </div> */}
-    </div>
+    </div> 
 
     <div className="grid-item grid-title">
       <FormattedMessage id="visitor-plateNumber" />
@@ -406,31 +390,30 @@ useEffect(() => {
           <div>
             <img
               alt=""
-              // src={"http://192.168.195.213:8080" + cam4.imagePath}
-              src={`http://${ip}:8080${cam1.imagePath}`}
+              src={"D:/workspace/ThaiLPR/jpg/"+{cam1date}+"/cam1"+{cam1image}}
               width={"100%"}
             ></img>
           </div>
         </div>
-        <div className="grid-item item2">
+        {/* <div className="grid-item item2">
           <div className="col">
             <img
               alt=""
-              // src={"http://192.168.195.213:8080" + cam1.imagePath}
+              src={"http://192.168.195.213:8080" + cam1.imagePath}
               src={`http://${ip}:8080${cam2.imagePath}`}
               width={"100%"}
             ></img>
           </div>
-        </div>
+        </div> */}
         
-
+      <div>
         <div className="grid-item item1">
-          <div className="col">{cam1.plateNumber}</div>
+          <div className="grid">{cam1plate}</div>
         </div>
-        <div className="grid-item item2">
+        {/* <div className="grid-item item2">
           <div className="col">{cam2.plateNumber}</div>
+        </div> */}
         </div>
-
       </div>
   </div>
 );

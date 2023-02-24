@@ -11,7 +11,7 @@ export default function ViolationDemo() {
 
   const serverUrl = useContext(urlContext);
 
-  const fetchurl = serverUrl + "lpr/all";
+  const fetchurl = serverUrl + "getAllCars";
   // const fetchurl = "http://192.168.195.213:8080/lpr/all";
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function ViolationDemo() {
 
   return (
     <div className="App">
-      <SearchBar />
+      {/* <SearchBar /> */}
       <ReactTable
         tableData={tableData}
         sizePerPage={sizePerPage}
@@ -60,13 +60,9 @@ const TableHeader = () => {
       <th>
         <FormattedMessage id="visitor-plateNumber" />
       </th>
-      <th><FormattedMessage id="visitor-name" /></th>
-      <th> <FormattedMessage id="visitor-vehicleType" /></th>
+
       <th>
         <FormattedMessage id="recognitionTimeStr" />
-      </th>
-      <th>
-        <FormattedMessage id="passStatus" />
       </th>
       <th>
         <FormattedMessage id="cameraId" />
@@ -83,10 +79,8 @@ const tableBody = (value, index) => {
   return (
     <tr key={index}>
       <td>{value.plateNumber}</td>
-      <td>{value.name}</td>
-      <td>{value.vehicleType}</td>
+
       <td>{value.recognitionTimeStr}</td>
-      <td>{value.passStatus}</td>
       <td>{value.cameraId}</td>
       <td>
         <ImgButton imagePath={value.imagePath} />
