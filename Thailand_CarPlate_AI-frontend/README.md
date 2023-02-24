@@ -58,6 +58,10 @@ npm start
 ```
 替換成自己的 Component。
 
+## 在server端使用mklink硬連結以方便開啟圖片
+
+mklink /d D:\react\Thailand_CarPlate_AI\Thailand_CarPlate_AI-frontend\public\jpg D:\workspace\ThaiLPR\jpg
+
 ## 部署 (開發模式)
 
 編譯
@@ -90,3 +94,4 @@ pm2 restart southeast_asia_frontend
 # 刪除
 pm2 delete southeast_asia_frontend
 ```
+
